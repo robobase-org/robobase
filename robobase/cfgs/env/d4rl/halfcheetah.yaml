@@ -1,0 +1,11 @@
+# @package _global_
+
+defaults:
+  - d4rl
+  - _self_
+
+env:
+  # choose between [halfcheetah-random-v0/v2, halfcheetah-medium-v0/v2, halfcheetah-expert-v0/v2, halfcheetah-medium-replay-v0/v2, halfcheetah-medium-expert-v0/v2]
+  task_name: halfcheetah-medium-v2
+
+# demos: 1000 # Full size = 1000

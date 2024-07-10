@@ -1,0 +1,77 @@
+name: RoboBase
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - '**'
+  schedule:
+    - cron: '0 0 1 * *'
+
+jobs:
+  clean:
+    runs-on: [self-hosted, linux, x86, gpu]
+    steps:
+      - name: Prune Docker Images
+        run: docker image prune -af
+
+  test:
+    needs: clean
+    runs-on: [self-hosted, linux, x86, gpu]
+    container:
+      image: nvidia/cuda:11.7.1-base-ubuntu22.04
+      options: --privileged --net=host --gpus=all -e=DISPLAY -e=SHELL=/bin/bash -e=NVIDIA_DRIVER_CAPABILITIES=all
+      volumes:
+        - /usr/share/vulkan/icd.d:/usr/share/vulkan/icd.d
+        - ${{ secrets.HOME }}/.ssh:/root/.ssh_original
+
+    steps:
+      - name: Set up environment variables
+        run: |
+          export XDG_RUNTIME_DIR=/run/user/$(id -u)
+          export XAUTHORITY=/run/user/$(id -u)/gdm/Xauthority
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y wget python3 python3-pip python3.10-venv xvfb git
+          python3 -m venv githubenv
+          . githubenv/bin/activate
+          apt-get install -y wget python3 python3-pip xvfb libgl1-mesa-glx libosmesa6 libxkbcommon-x11-0 libegl1-mesa-dev libgles2-mesa-dev git curl libffi-dev libffi7 libglib2.0-0 'libxcb.*-dev' libxcb-xinerama0 libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libxcb-cursor0 libglfw3 libosmesa6-dev patchelf
+          pip install torch==1.13.1+cu116 torchvision==0.14.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116
+          pip install -e ".[dev]"
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          pre-commit run --all-files
+
+      - name: Install CoppeliaSim
+        run: |
+          DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb qtbase5-dev qtdeclarative5-dev libqt5webkit5-dev libsqlite3-dev qtchooser qt5-qmake qtbase5-dev-tools qttools5-dev-tools
+          chmod u+x extra_install_scripts/install_coppeliasim.sh
+          ./extra_install_scripts/install_coppeliasim.sh
+          export COPPELIASIM_ROOT=${HOME}/.local/bin/CoppeliaSim
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$COPPELIASIM_ROOT
+          export QT_QPA_PLATFORM_PLUGIN_PATH=$COPPELIASIM_ROOT
+
+      - name: Install Mujoco210
+        run: |
+          wget --no-check-certificate https://mujoco.org/download/mujoco210-linux-x86_64.tar.gz
+          mkdir ${HOME}/.mujoco
+          tar -xvzf mujoco210-linux-x86_64.tar.gz -C ${HOME}/.mujoco
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${HOME}/.mujoco/mujoco210/bin
+
+      - name: Install Python Packages
+        run: |
+          pip uninstall -y rlbench pyrep bigym d4rl
+          pip --default-timeout=60 install -e ".[dev,dmc,rlbench,bigym,d4rl]"
+          pip install pytest-xvfb
+          export MKL_SERVICE_FORCE_INTEL=1
+
+      - name: Run Tests
+        run: pytest tests/unit --junitxml=test-reports/pytest.xml
+
+    env:
+      DISPLAY: :0
+      SHELL: /bin/bash
+      NVIDIA_DRIVER_CAPABILITIES: all

@@ -1,0 +1,49 @@
+name: RoboBase_Integration
+
+on:
+  schedule:
+    - cron: '0 0 3 * *'
+
+jobs:
+  clean:
+    runs-on: [self-hosted, linux, x86, gpu]
+    steps:
+      - name: Prune Docker Images
+        run: docker image prune -af
+
+  test:
+    needs: clean
+    runs-on: [self-hosted, linux, x86, gpu]
+    container:
+      image: nvidia/cuda:11.7.1-base-ubuntu22.04
+      options: --privileged --net=host --gpus=all -e=DISPLAY -e=SHELL=/bin/bash -e=NVIDIA_DRIVER_CAPABILITIES=all
+      volumes:
+        - /usr/share/vulkan/icd.d:/usr/share/vulkan/icd.d
+        - ${{ secrets.HOME }}/.ssh:/root/.ssh
+
+    steps:
+      - name: Set up environment variables
+        run: |
+          export XDG_RUNTIME_DIR=/run/user/$(id -u)
+          export XAUTHORITY=/run/user/$(id -u)/gdm/Xauthority
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y wget python3 python3-pip python3.10-venv xvfb git
+          python3 -m venv githubenv
+          . githubenv/bin/activate
+          apt-get install -y wget python3 python3-pip xvfb libgl1-mesa-glx libosmesa6 libxkbcommon-x11-0 libegl1-mesa-dev libgles2-mesa-dev git curl libffi-dev libffi7 libglib2.0-0 'libxcb.*-dev' libxcb-xinerama0 libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libxcb-cursor0
+          pip install torch==1.13.1+cu116 torchvision==0.14.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116
+          pip install -e ".[dev]"
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          ssh-keyscan -t rsa github.com >> $HOME/.ssh/known_hosts
+          pip install -e ".[dmc]"
+          Xvfb :99 &
+          export DISPLAY=:99
+          pytest tests/integration --junitxml=test-reports/pytest.xml
+
+    env:
+      DISPLAY: :0
+      SHELL: /bin/bash
+      NVIDIA_DRIVER_CAPABILITIES: all

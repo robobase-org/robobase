@@ -1,0 +1,10 @@
+# @package _global_
+
+defaults:
+  - rlbench/easy
+  - rlbench
+  - _self_
+
+env:
+  task_name: take_plate_off_colored_dish_rack
+  episode_length: ${env.tasks.${env.task_name}.episode_length}

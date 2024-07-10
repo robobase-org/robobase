@@ -1,0 +1,18 @@
+# @package _global_
+
+defaults:
+  - ../env: null  # Please specify environment to use in command line
+  - ../method: drqv2
+
+method:
+  distributional_critic: true
+  critic_model:
+    _target_: robobase.models.MLPWithBottleneckFeatures
+    _partial_: true
+    input_shapes: ???
+    output_shape: [251, 1] # This refers to the number of atoms for distributional critic
+    keys_to_bottleneck: [fused_view_feats, low_dim_obs, time_obs]
+    bottleneck_size: 50
+    norm_after_bottleneck: true
+    tanh_after_bottleneck: true
+    mlp_nodes: [1024, 1024]

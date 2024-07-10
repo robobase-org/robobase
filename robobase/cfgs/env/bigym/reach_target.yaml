@@ -1,0 +1,9 @@
+# @package _global_
+
+defaults:
+  - bigym
+  - _self_
+
+env:
+  task_name: reach_target
+  stddev_schedule: linear(1.0,0.1,500000)

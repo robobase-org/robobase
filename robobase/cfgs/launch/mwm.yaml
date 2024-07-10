@@ -1,0 +1,24 @@
+# @package _global_
+
+defaults:
+  - ../env: null
+  - ../method: mwm
+
+pixels: true
+visual_observation_shape: [64, 64]
+frame_stack: 1
+batch_size: 16
+replay_size_before_train: 5000
+repeat_final_frame: false  # Could be useful for sparse, episodic task
+update_every_steps: 5
+num_explore_steps: 5000
+frame_stack_on_channel: false
+
+replay:
+  sequential: true
+  num_workers: 16
+  transition_seq_len: 50  # the length of transition seq for each sample
+
+hydra:
+  run:
+    dir: ./exp_local/mwm/${env.task_name}_${now:%Y%m%d%H%M}

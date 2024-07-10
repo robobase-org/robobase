@@ -1,0 +1,87 @@
+defaults:
+  - _self_
+  - env: null
+  - method: null
+  - intrinsic_reward_module: null
+  - launch: null
+  - override hydra/launcher: joblib
+
+# Universal settings
+create_train_env: true
+num_train_envs: 1
+replay_size_before_train: 2000
+num_pretrain_steps: 0
+num_train_frames: 1100000
+eval_every_steps: 10000
+num_eval_episodes: 10
+update_every_steps: 2
+num_explore_steps: 2000
+save_snapshot: false
+snapshot_every_n: 1000
+batch_size: 256
+
+# Demonstration settings
+demos: 0
+demo_batch_size: null  # If set to > 0, introduce a separate buffer for demos
+use_self_imitation: false  # When using a separate buffer for demos, If set to True, save successful (online) trajectories into the separate demo buffer
+
+# Observation settings
+pixels: false
+visual_observation_shape: [84, 84]
+frame_stack: 1
+frame_stack_on_channel: true
+use_onehot_time_and_no_bootstrap: false
+
+# Action settings
+action_repeat: 1
+action_sequence: 1 # ActionSequenceWrapper
+execution_length: 1  # If execution_length < action_sequence, we use receding horizon control
+temporal_ensemble: true  # Temporal ensemling only applicable to action sequence > 1
+temporal_ensemble_gain: 0.01
+use_standardization: false  # Demo-based standardization for action space
+use_min_max_normalization: false  # Demo-based min-max normalization for action space
+min_max_margin: 0.0  # If set to > 0, introduce margin for demo-driven min-max normalization
+
+# Replay buffer settings
+replay:
+  prioritization: false
+  size: 1000000
+  gamma: 0.99
+  demo_size: null
+  save_dir: null
+  nstep: 3
+  num_workers: 4
+  pin_memory: true
+  alpha: 0.7  # prioritization
+  beta: 0.5  # prioritization
+  sequential: false
+  transition_seq_len: 1  # The length of transition sequence returned from sample() call. Only applicable if sequential is True
+
+# logging settings
+wandb:  # weight and bias
+  use: false
+  project: ${oc.env:USER}RoboBase
+  entity: rll
+  name: null
+
+tb:  # TensorBoard
+  use: false
+  log_dir: /tmp/robobase_tb_logs
+  name: null
+
+# Misc
+experiment_name: exp
+seed: 1
+num_gpus: 1
+log_every: 1000
+log_train_video: false
+log_eval_video: true
+log_pretrain_every: 100
+save_csv: false
+
+hydra:
+  run:
+    dir: ./exp_local/${now:%Y.%m.%d}/${now:%H%M%S}_${hydra.job.override_dirname}
+  sweep:
+    dir: ./exp_local/${now:%Y.%m.%d}/${now:%H%M}_${hydra.job.override_dirname}
+    subdir: ${hydra.job.num}

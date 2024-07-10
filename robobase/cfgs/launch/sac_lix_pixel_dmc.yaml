@@ -1,0 +1,10 @@
+# @package _global_
+
+defaults:
+  - ../env: dmc/cartpole_swingup
+  - ../method: sac_lix
+
+pixels: true
+frame_stack: 3
+action_repeat: 2
+num_train_envs: 1

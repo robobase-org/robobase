@@ -1,0 +1,10 @@
+# @package _global_
+
+
+defaults:
+  - dmc/easy
+  - dmc
+  - _self_
+
+env:
+  task_name: pendulum_swingup

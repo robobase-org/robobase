@@ -1,0 +1,74 @@
+# @package _global_
+
+method:
+  _target_: robobase.method.value_based.ValueBased
+  is_rl: true
+  num_explore_steps: ${num_explore_steps}
+  critic_lr: 1e-4
+  view_fusion_lr: 1e-4
+  encoder_lr: 1e-4
+  weight_decay: 0.0
+  num_critics: 1  # Not supported
+  critic_target_tau: 0.01
+  stddev_schedule: 0.1
+  critic_grad_clip: null
+  use_dueling: false
+  always_bootstrap: false  # Always do bootstrap; could be useful for episodic task
+  bc_lambda: 0.0
+  bc_margin: 0.1  # If > 0.0, encourage expert action's Q(s, a*) be higher than other actions' Q(s, a)
+  use_target_network_for_rollout: false
+  num_update_steps: 1  # If > 1, take N updates inside a single `update` call
+  use_augmentation: true
+  use_torch_compile: false  # Only works for torch >= 2.2.0
+  bins: 5
+
+  advantage_model:
+    _target_: robobase.models.MLPWithBottleneckFeatures
+    _partial_: true
+    input_shapes: ???
+    output_shape: ???
+    num_envs: ???
+    num_rnn_layers: 1
+    rnn_hidden_size: 128
+    keys_to_bottleneck: [fused_view_feats]
+    bottleneck_size: 64
+    norm_after_bottleneck: true
+    tanh_after_bottleneck: true
+    mlp_nodes: [512, 512]
+    activation: silu
+    norm: layer
+
+  value_model:
+    _target_: robobase.models.MLPWithBottleneckFeatures
+    _partial_: true
+    input_shapes: ???
+    output_shape: ???
+    num_envs: ???
+    num_rnn_layers: 1
+    rnn_hidden_size: 128
+    keys_to_bottleneck: [fused_view_feats]
+    bottleneck_size: 64
+    norm_after_bottleneck: true
+    tanh_after_bottleneck: true
+    mlp_nodes: [512, 512]
+    activation: silu
+    norm: layer
+
+  encoder_model:
+    _target_: robobase.models.EncoderCNNMultiViewDownsampleWithStrides
+    _partial_: true
+    input_shape: ???
+    num_downsample_convs: 1
+    num_post_downsample_convs: 3
+    channels: 32
+    kernel_size: 3
+    channels_multiplier: 1
+    padding: 0
+    activation: silu
+    norm: layer_for_cnn
+
+  view_fusion_model:
+    _target_: robobase.models.FusionMultiCamFeature
+    _partial_: true
+    input_shape: ???
+    mode: flatten

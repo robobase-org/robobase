@@ -1,0 +1,16 @@
+# @package _global_
+
+defaults:
+  - rlbench/episode_length/default  # change this if you want to use a different set of episode lengths
+
+visual_observation_shape: [128, 128]
+
+env:
+  env_name: rlbench
+  episode_length: ???
+  dataset_root: ''
+  action_mode: JOINT_POSITION
+  cameras: ["front", "wrist", "left_shoulder", "right_shoulder"]
+  renderer: opengl3
+  arm_max_velocity: 1.0
+  arm_max_acceleration: 4.0

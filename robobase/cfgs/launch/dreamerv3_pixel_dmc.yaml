@@ -1,0 +1,26 @@
+# @package _global_
+
+defaults:
+  - ../env: dmc/cartpole_swingup
+  - ../method: dreamerv3
+
+pixels: true
+visual_observation_shape: [64, 64]
+frame_stack: 1
+batch_size: 16
+replay_size_before_train: 2500
+update_every_steps: 2
+num_explore_steps: 2500
+frame_stack_on_channel: false
+eval_every_steps: 5000
+
+replay:
+  sequential: true
+  num_workers: 4
+  gamma: 0.997
+  size: 500000
+  transition_seq_len: 64  # the length of transition seq for each sample
+
+hydra:
+  run:
+    dir: ./exp_local/dreamerv3/${env.task_name}_${now:%Y%m%d%H%M}

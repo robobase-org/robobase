@@ -1,0 +1,59 @@
+# @package _global_
+
+defaults:
+  - ../method: cqn
+  - ../env: rlbench/reach_target
+  - override ../env: rlbench/episode_length/cqn
+
+pixels: false
+frame_stack: 1
+action_repeat: 1
+
+env:
+  arm_max_velocity: 2.0
+  arm_max_acceleration: 8.0
+
+demos: 20
+use_min_max_normalization: true
+min_max_margin: 0.2
+batch_size: 256
+demo_batch_size: 256
+num_pretrain_steps: 0
+num_explore_steps: 0
+replay_size_before_train: 250
+log_every: 200
+
+num_eval_episodes: 25
+eval_every_steps: 500
+num_train_frames: 10100
+
+update_every_steps: 1
+replay:
+  nstep: 1
+  size: 50000
+  demo_size: 50000
+  num_workers: 4
+
+method:
+  use_dueling: true
+  v_min: -1.0
+  v_max: 1.0
+  atoms: 51
+  use_target_network_for_rollout: true
+  bc_lambda: 1.0
+  bc_margin: 0.01
+  critic_lambda: 0.1
+  stddev_schedule: 0.01
+  weight_decay: 0.1
+  always_bootstrap: true
+
+  advantage_model:
+    keys_to_bottleneck: [fused_view_feats, low_dim_obs, time_obs]
+
+  value_model:
+    keys_to_bottleneck: [fused_view_feats, low_dim_obs, time_obs]
+
+
+hydra:
+  run:
+    dir: ./exp_local/state_cqn/rlbench_${env.task_name}_${now:%Y%m%d%H%M%S}

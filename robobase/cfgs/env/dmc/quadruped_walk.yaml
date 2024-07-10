@@ -1,0 +1,9 @@
+# @package _global_
+
+defaults:
+  - dmc/medium
+  - dmc
+  - _self_
+
+env:
+  task_name: quadruped_walk

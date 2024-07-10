@@ -1,0 +1,11 @@
+# @package _global_
+
+defaults:
+  - d4rl
+  - _self_
+
+env:
+  # choose between [walker2d-random-v0/v2, walker2d-medium-v0/v2, walker2d-expert-v0/v2, walker2d-medium-replay-v0/v2, walker2d-medium-expert-v0/v2]
+  task_name: walker2d-medium-v2
+
+# demos: 1191 # Full size = 1191

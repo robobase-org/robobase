@@ -1,0 +1,37 @@
+# @package _global_
+
+method:
+  _target_: robobase.method.bc.BC
+  is_rl: false
+  lr: 1e-4
+  num_train_steps: ${num_pretrain_steps}
+  adaptive_lr: true
+  actor_grad_clip: null
+
+  actor_model:
+    _target_: robobase.models.MLPWithBottleneckFeaturesAndSequenceOutput
+    _partial_: true
+    input_shapes: ???
+    output_shape: ???
+    num_envs: ???
+    num_rnn_layers: 1
+    rnn_hidden_size: 128
+    keys_to_bottleneck: []
+    bottleneck_size: 50
+    norm_after_bottleneck: true
+    tanh_after_bottleneck: true
+    mlp_nodes: [1024, 1024]
+    output_sequence_network_type: rnn
+    output_sequence_length: ${action_sequence}
+
+  encoder_model:
+    _target_: robobase.models.ResNetEncoder
+    _partial_: true
+    input_shape: ???
+    model: resnet18
+
+  view_fusion_model:
+    _target_: robobase.models.FusionMultiCamFeature
+    _partial_: true
+    input_shape: ???
+    mode: flatten

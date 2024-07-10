@@ -1,0 +1,9 @@
+# @package _global_
+
+env:
+  env_name: bigym
+  episode_length: 1000
+  cameras: ["head", "right_wrist", "left_wrist"]
+  action_mode: JOINT_POSITION
+
+action_repeat: 2

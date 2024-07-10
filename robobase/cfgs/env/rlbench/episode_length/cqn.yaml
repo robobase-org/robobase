@@ -1,0 +1,50 @@
+# @package _global_
+
+env:
+  tasks:
+    basketball_in_hoop:
+      episode_length: 125
+    insert_usb_in_computer:
+      episode_length: 100
+    lamp_on:
+      episode_length: 100
+    meat_on_grill:
+      episode_length: 150
+    open_door:
+      episode_length: 125
+    open_drawer:
+      episode_length: 100
+    open_microwave:
+      episode_length: 125
+    open_oven:
+      episode_length: 225
+    phone_on_base:
+      episode_length: 175
+    pick_up_cup:
+      episode_length: 100
+    press_switch:
+      episode_length: 100
+    put_books_on_bookshelf:
+      episode_length: 175
+    put_item_in_drawer:
+      episode_length: 350
+    put_money_in_safe:
+      episode_length: 150
+    put_rubbish_in_bin:
+      episode_length: 150
+    reach_target:
+      episode_length: 50
+    slide_block_to_target:
+      episode_length: 150
+    stack_wine:
+      episode_length: 150
+    sweep_to_dustpan:
+      episode_length: 100
+    take_lid_off_saucepan:
+      episode_length: 100
+    take_plate_off_colored_dish_rack:
+      episode_length: 150
+    toilet_seat_up:
+      episode_length: 150
+    turn_tap:
+      episode_length: 125

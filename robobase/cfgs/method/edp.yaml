@@ -1,0 +1,87 @@
+# @package _global_
+
+method:
+  _target_: robobase.method.edp.DiffusionRL
+  is_rl: true
+
+  # actor-critic param
+  num_explore_steps: ${num_explore_steps}
+  actor_grad_clip: 1
+  actor_lr: 1e-4
+  critic_lr: 1e-4
+  view_fusion_lr: 1e-4
+  encoder_lr: 1e-4
+  num_critics: 2
+  critic_target_tau: 0.01
+  critic_grad_clip: 1
+  bc_lambda: 0.0
+  always_bootstrap: false  # Always do bootstrap; could be useful for episodic task
+  action_sequence_network_type: rnn  # rnn, mlp
+  critic_updates_shared_vision_encoder: true
+  distributional_critic: false
+  distributional_critic_limit: 20  # v_min / m_max for dist_critic
+  distributional_critic_atoms: 251
+  distributional_critic_transform: true  # hyperbolic/parabolic transformation to value
+  actor_update_method: "iql"
+
+  # diffusion param
+  solver_type: "DDPM"
+  num_diffusion_iters: 100
+  beta_schedule: "linear"
+
+  # iql param
+  expectile: 0.7
+  awr_temperature: 3.0
+
+  # dql param
+  dql_alpha: 2.0
+
+  # edp
+  diff_coeff: 1.0
+  guide_coeff:  1.0
+  learnable_std: false
+
+  actor_model:
+    _target_: robobase.models.diffusion_models.MLPWithBottleneckFeaturesForDiffusion
+    _partial_: true
+    input_shapes: ???
+    output_shape: ???
+    num_envs: ???
+    num_rnn_layers: 1
+    rnn_hidden_size: 128
+    keys_to_bottleneck: [actions, obs_features]
+    bottleneck_size: 256
+    norm_after_bottleneck: true
+    tanh_after_bottleneck: true
+    mlp_nodes: [1024, 1024]
+    sequence_length: ${action_sequence}
+    diffusion_step_embed_dim: 16
+
+  critic_model:
+    _target_: robobase.models.MLPWithBottleneckFeatures
+    _partial_: true
+    input_shapes: ???
+    output_shape: 1
+    num_envs: ???
+    num_rnn_layers: 1
+    rnn_hidden_size: 128
+    keys_to_bottleneck: [fused_view_feats, low_dim_obs, time_obs]
+    bottleneck_size: 50
+    norm_after_bottleneck: true
+    tanh_after_bottleneck: true
+    mlp_nodes: [1024, 1024]
+
+  encoder_model:
+    _target_: robobase.models.EncoderCNNMultiViewDownsampleWithStrides
+    _partial_: true
+    input_shape: ???
+    num_downsample_convs: 1
+    num_post_downsample_convs: 3
+    channels: 32
+    kernel_size: 3
+
+  view_fusion_model:
+    _target_: robobase.models.FusionMultiCamFeature
+    _partial_: true
+    input_shape: ???
+    mode: flatten

@@ -1,0 +1,23 @@
+# @package _global_
+
+defaults:
+  - ../env: null  # Please specify environment to use in command line
+  - ../method: cqn
+
+pixels: false
+frame_stack: 1
+action_repeat: 1
+
+update_every_steps: 1
+replay:
+  nstep: 3  # Use 1 for walker_walk
+
+method:
+  use_dueling: false
+  v_min: 0.0
+  v_max: 200.0
+  atoms: 51
+
+hydra:
+  run:
+    dir: ./exp_local/state_cqn/dmc_${env.task_name}_${now:%Y%m%d%H%M%S}

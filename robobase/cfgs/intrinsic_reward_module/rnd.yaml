@@ -1,0 +1,6 @@
+# @package _global_
+
+intrinsic_reward_module:
+  _target_: robobase.intrinsic_reward_module.RND
+  beta: 0.05
+  kappa: 0.000025

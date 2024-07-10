@@ -1,0 +1,183 @@
+# @package _global_
+
+method:
+  _target_: robobase.method.mwm.MaskedWorldModel
+  is_rl: true
+  num_explore_steps: ${num_explore_steps}
+  actor_lr: 1e-4
+  critic_lr: 1e-4
+  world_model_lr: 1e-4
+  weight_decay: 1e-6
+  critic_target_interval: 100
+  critic_target_tau: 1.0
+  discount: ${replay.gamma}
+  discount_lambda: 0.95
+  always_bootstrap: false  # Always do bootstrap; could be useful for episodic task
+  num_critics: 1
+  actor_grad: dynamics
+  use_return_normalization: true
+  use_input_low_dim_symlog: true
+  aent_scale: 1e-4
+  actor_grad_clip: 100.0
+  critic_grad_clip: 100.0
+  world_model_grad_clip: 1000.0
+  horizon: 15
+  action_sequence_network_type: rnn
+  use_torch_compile: true
+  use_amp: true
+  pixel_decoder_model: null
+  pixel_loss_scale: 0.0  # we don't use this
+  low_dim_mae_loss_scale: 1.0
+  low_dim_loss_scale: 1.0
+  reward_loss_scale: 1.0
+  discount_loss_scale: 1.0
+  dyn_loss_scale: 1.0
+  rep_loss_scale: 0.2
+  kl_free: 0.01
+  bc_loss_scale: 0.0
+  # Configs for MWM
+  mae_lr: 1e-4
+  mae_batch_size: 512
+  mae_warmup: 2500
+  mae_grad_clip: 100.0
+  mae_pretrain_steps: 5000
+  mask_ratio: 0.75
+  mae_use_augmentation: false
+  num_mask_views: 0
+  num_update_steps: 1
+  # Configs for pre-training.
+  use_frozen_mae: false
+  world_model_pretrain_steps: 0
+  actor_critic_pretrain_steps: 0
+  mae_save_path: null
+  world_model_save_path: null
+  actor_critic_save_path: null
+  mae_load_path: null
+  world_model_load_path: null
+  actor_critic_load_path: null
+
+  actor_model:
+    _target_: robobase.models.MLPWithBottleneckFeaturesAndSequenceOutput
+    _partial_: true
+    input_shapes: ???
+    output_shape: ???
+    mlp_nodes: [512, 512]
+    output_sequence_network_type: rnn
+    output_sequence_length: ${action_sequence}
+    activation: silu
+    norm: layer
+    num_envs: 0  # n/a (not used in DreamerV3-based methods. Exists for compatibility)
+    num_rnn_layers: 1  # n/a (see above)
+    rnn_hidden_size: 128  # n/a (see above)
+    keys_to_bottleneck: []  # n/a (see above)
+    bottleneck_size: 50  # n/a (see above)
+    norm_after_bottleneck: true  # n/a (see above)
+    tanh_after_bottleneck: true  # n/a (see above)
+
+  critic_model:
+    _target_: robobase.models.MLPWithBottleneckFeatures
+    _partial_: true
+    input_shapes: ???
+    output_shape: ???
+    mlp_nodes: [512, 512]
+    activation: silu
+    norm: layer
+    num_envs: 0  # n/a (not used in DreamerV3-based methods. Exists for compatibility)
+    num_rnn_layers: 1  # n/a (see above)
+    rnn_hidden_size: 128  # n/a (see above)
+    keys_to_bottleneck: []  # n/a (see above)
+    bottleneck_size: 50  # n/a (see above)
+    norm_after_bottleneck: true  # n/a (see above)
+    tanh_after_bottleneck: true  # n/a (see above)
+
+  pixel_encoder_model:
+    _target_: robobase.models.EncoderMultiViewVisionTransformer
+    _partial_: true
+    input_shape: ???
+    patch_size: 8
+    embed_dim: 256
+    depth: 4
+    num_heads: 4
+    decoder_embed_dim: 256
+    decoder_depth: 3
+    decoder_num_heads: 4
+    mlp_ratio: 4.0
+    conv_embed: true
+    reward_pred: true
+
+  low_dim_encoder_model:
+    _target_: robobase.models.MLPWithBottleneckFeaturesAndWithoutHead
+    _partial_: true
+    input_shape: ???
+    mlp_nodes: [512, 512]
+    activation: silu
+    norm: layer
+    output_shape: 1  # n/a (not used in ...WithoutHead. Exists for compatibility)
+    num_envs: 0  # n/a (not used in DreamerV3-based methods. Exists for compatibility)
+    num_rnn_layers: 1  # n/a (see above)
+    rnn_hidden_size: 128  # n/a (see above)
+    keys_to_bottleneck: []  # n/a (see above)
+    bottleneck_size: 50  # n/a (see above)
+    norm_after_bottleneck: true  # n/a (see above)
+    tanh_after_bottleneck: true  # n/a (see above)
+
+  low_dim_decoder_model:
+    _target_: robobase.models.MLPWithBottleneckFeatures
+    _partial_: true
+    input_shape: ???
+    output_shape: ???
+    mlp_nodes: [512, 512]
+    activation: silu
+    norm: layer
+    num_envs: 0  # n/a (not used in DreamerV3-based methods. Exists for compatibility)
+    num_rnn_layers: 1  # n/a (see above)
+    rnn_hidden_size: 128  # n/a (see above)
+    keys_to_bottleneck: []  # n/a (see above)
+    bottleneck_size: 50  # n/a (see above)
+    norm_after_bottleneck: true  # n/a (see above)
+    tanh_after_bottleneck: true  # n/a (see above)
+
+  dynamics_model:
+    _target_: robobase.models.model_based.dynamics_model.RSSM
+    _partial_: true
+    embed_dim: ???
+    action_dim: ???
+    stoch: 32
+    discrete: 32
+    deter: 512
+    hidden: 512
+    min_std: 0.1
+    unimix_ratio: 0.01
+    initial: learned
+
+  reward_predictor_model:
+    _target_: robobase.models.MLPWithBottleneckFeatures
+    _partial_: true
+    input_shapes: ???
+    output_shape: ???
+    mlp_nodes: [512, 512]
+    activation: silu
+    norm: layer
+    num_envs: 0  # n/a (not used in DreamerV3-based methods. Exists for compatibility)
+    num_rnn_layers: 1  # n/a (see above)
+    rnn_hidden_size: 128  # n/a (see above)
+    keys_to_bottleneck: []  # n/a (see above)
+    bottleneck_size: 50  # n/a (see above)
+    norm_after_bottleneck: true  # n/a (see above)
+    tanh_after_bottleneck: true  # n/a (see above)
+
+  discount_predictor_model:
+    _target_: robobase.models.MLPWithBottleneckFeatures
+    _partial_: true
+    input_shapes: ???
+    output_shape: ???
+    mlp_nodes: [512, 512]
+    activation: silu
+    norm: layer
+    num_envs: 0  # n/a (not used in DreamerV3-based methods. Exists for compatibility)
+    num_rnn_layers: 1  # n/a (see above)
+    rnn_hidden_size: 128  # n/a (see above)
+    keys_to_bottleneck: []  # n/a (see above)
+    bottleneck_size: 50  # n/a (see above)
+    norm_after_bottleneck: true  # n/a (see above)
+    tanh_after_bottleneck: true  # n/a (see above)

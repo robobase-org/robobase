@@ -1,0 +1,30 @@
+# @package _global_
+
+defaults:
+  - ../env: null  # Please specify environment to use in command line
+  - ../method: edp
+
+num_pretrain_steps: 500000
+
+# main config
+no_data_collection: false
+demos: .inf
+eval_every_frames: 10000
+num_train_frames: 0
+use_standardization: false
+
+method:
+  encoder_model: null
+  view_fusion_model: null
+  actor_update_method: "iql"
+  diff_coeff: 1.0
+  guide_coeff: 1.0
+  awr_temperature: 1.0
+
+  # diffusion param
+  solver_type: "DDPM"
+  num_diffusion_iters: 100
+  beta_schedule: "linear"
+
+wandb:
+  project: diff-rl

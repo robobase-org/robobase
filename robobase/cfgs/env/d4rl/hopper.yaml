@@ -1,0 +1,11 @@
+# @package _global_
+
+defaults:
+  - d4rl
+  - _self_
+
+env:
+  # choose between [hopper-random-v0/v2, hopper-medium-v0/v2, hopper-expert-v0/v2, hopper-medium-replay-v0/v2, hopper-medium-expert-v0/v2]
+  task_name: hopper-medium-v2
+
+# demos: 2187 # Full size = 2187

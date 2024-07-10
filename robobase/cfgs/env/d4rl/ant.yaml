@@ -1,0 +1,11 @@
+# @package _global_
+
+defaults:
+  - d4rl
+  - _self_
+
+env:
+  # choose between [ant-random-v0/v2, ant-medium-v0/v2, ant-expert-v0/v2, ant-medium-replay-v0/v2, ant-medium-expert-v0/v2]
+  task_name: ant-medium-v2
+
+# demos: 1203 # Full size = 1203

@@ -1,0 +1,10 @@
+# @package _global_
+
+defaults:
+  - rlbench/easy
+  - rlbench
+  - _self_
+
+env:
+  task_name: press_switch
+  episode_length: ${env.tasks.${env.task_name}.episode_length}

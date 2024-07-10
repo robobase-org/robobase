@@ -1,0 +1,46 @@
+# @package _global_
+method:
+  _target_: robobase.method.act.ActBCAgent
+  is_rl: false
+  device: ${device}
+  lr: 1e-4
+  lr_backbone: 1e-5
+  weight_decay: 1e-4
+  num_train_steps: ${num_pretrain_steps}
+  adaptive_lr: false
+  actor_grad_clip: null
+  # This would expect language embeddings using openai-clip
+  # TODO: add an environment wrapper for an extra observation with language embeddings
+  # But this would be environment-specific
+  use_lang_cond: False
+
+  actor_model:
+    _target_: robobase.models.multi_view_transformer.MultiViewTransformerEncoderDecoderACT
+    _partial_: true
+    input_shape: ???
+    hidden_dim: 512
+    enc_layers: 4
+    # Note: Although the original ACT implementation has 7 for `n_decoder_layers`, there is a bug in the code
+    # that means only the first layer is used. Here we match the original implementation by setting this to 1.
+    # See this issue https://github.com/tonyzhaozh/act/issues/25#issue-2258740521.
+    dec_layers: 1
+    dim_feedforward: 3200
+    dropout: 0.1
+    nheads: 8
+    num_queries: ${action_sequence}
+    pre_norm: false
+    state_dim: ???
+    action_dim: ???
+    use_lang_cond: ${method.use_lang_cond}
+
+  encoder_model:
+    _target_: robobase.method.act.ImageEncoderACT
+    _partial_: true
+    input_shape: ???
+    hidden_dim: ${method.actor_model.hidden_dim}
+    position_embedding: "sine"
+    lr_backbone: ${method.lr_backbone}
+    masks: False
+    backbone: "resnet18"
+    dilation: False
+    use_lang_cond: ${method.use_lang_cond}

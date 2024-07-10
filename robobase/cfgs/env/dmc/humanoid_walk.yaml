@@ -1,0 +1,9 @@
+# @package _global_
+
+defaults:
+  - dmc/hard
+  - dmc
+  - _self_
+
+env:
+  task_name: humanoid_walk

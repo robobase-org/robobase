@@ -1,0 +1,70 @@
+# @package _global_
+
+method:
+  _target_: robobase.method.sac_lix.SACLix
+  is_rl: true
+  num_explore_steps: ${num_explore_steps}
+  actor_lr: 1e-4
+  critic_lr: 1e-4
+  view_fusion_lr: 1e-4
+  encoder_lr: 1e-4
+  weight_decay: 0.0
+  num_critics: 2
+  critic_target_tau: 0.01
+  actor_grad_clip: null
+  critic_grad_clip: null
+  always_bootstrap: false  # Always do bootstrap; could be useful for episodic task
+  bc_lambda: 0.0
+  action_sequence_network_type: rnn  # rnn, mlp
+  critic_updates_shared_vision_encoder: true
+  alpha_lr: 1e-4
+  init_temperature: 0.1
+  distributional_critic: false
+  distributional_critic_limit: 20  # v_min / m_max for dist_critic
+  distributional_critic_atoms: 251
+  distributional_critic_transform: true  # hyperbolic/parabolic transformation to value
+
+  actor_model:
+    _target_: robobase.models.MLPWithBottleneckFeaturesAndSequenceOutput
+    _partial_: true
+    input_shapes: ???
+    output_shape: ???
+    num_envs: ???
+    num_rnn_layers: 1
+    rnn_hidden_size: 128
+    keys_to_bottleneck: [ fused_view_feats, low_dim_obs, time_obs ]
+    bottleneck_size: 50
+    norm_after_bottleneck: true
+    tanh_after_bottleneck: true
+    mlp_nodes: [ 1024, 1024 ]
+    output_sequence_network_type: rnn
+    output_sequence_length: ${action_sequence}
+
+  critic_model:
+    _target_: robobase.models.MLPWithBottleneckFeatures
+    _partial_: true
+    input_shapes: ???
+    output_shape: 1
+    num_envs: ???
+    num_rnn_layers: 1
+    rnn_hidden_size: 128
+    keys_to_bottleneck: [ fused_view_feats, low_dim_obs, time_obs ]
+    bottleneck_size: 50
+    norm_after_bottleneck: true
+    tanh_after_bottleneck: true
+    mlp_nodes: [ 1024, 1024 ]
+
+  encoder_model:
+    _target_: robobase.models.lix_utils.analysis_modules.EncoderAllFeatTiedRegularizedCNNMultiViewDownsampleWithStrides
+    _partial_: true
+    input_shape: ???
+    num_downsample_convs: 1
+    num_post_downsample_convs: 3
+    channels: 32
+    kernel_size: 3
+
+  view_fusion_model:
+    _target_: robobase.models.FusionMultiCamFeature
+    _partial_: true
+    input_shape: ???
+    mode: flatten

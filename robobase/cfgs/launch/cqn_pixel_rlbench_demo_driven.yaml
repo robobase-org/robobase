@@ -1,0 +1,72 @@
+# @package _global_
+
+defaults:
+  - ../method: cqn
+  - ../env: rlbench/take_lid_off_saucepan
+  - override ../env: rlbench/episode_length/cqn
+
+pixels: true
+visual_observation_shape: [84, 84]
+frame_stack: 8
+action_repeat: 1
+
+env:
+  arm_max_velocity: 2.0
+  arm_max_acceleration: 8.0
+
+demos: 100
+use_min_max_normalization: true
+min_max_margin: 0.2
+batch_size: 256
+demo_batch_size: 256
+num_pretrain_steps: 0
+num_explore_steps: 0
+replay_size_before_train: 500
+use_self_imitation: true
+num_train_frames: 30100
+log_every: 200
+
+num_eval_episodes: 50
+eval_every_steps: 2500
+
+update_every_steps: 1
+replay:
+  nstep: 1
+  size: 50000
+  demo_size: 50000
+  num_workers: 4
+
+method:
+  use_dueling: true
+  v_min: -2.0  # 1.0 is too tight with n_step > 1
+  v_max: 2.0 # -1.0 is too tight with n_step > 1
+  atoms: 51
+  use_target_network_for_rollout: true
+  bc_lambda: 1.0
+  bc_margin: 0.01
+  weight_decay: 0.1
+  stddev_schedule: 0.01
+  critic_lr: 5e-5
+  encoder_lr: 5e-5
+  critic_lambda: 0.1
+  always_bootstrap: true  # Always do bootstrap; could be useful for episodic task
+
+  advantage_model:
+    keys_to_bottleneck: [fused_view_feats, low_dim_obs, time_obs]
+    linear_bias: false
+
+  value_model:
+    keys_to_bottleneck: [fused_view_feats, low_dim_obs, time_obs]
+    linear_bias: false
+
+  encoder_model:
+    kernel_size: 4
+    padding: 1
+    channels_multiplier: 2
+    num_downsample_convs: 4
+    num_post_downsample_convs: 0
+    norm: img_ch_layer
+
+hydra:
+  run:
+    dir: ./exp_local/pixel_cqn/rlbench_${env.task_name}_${now:%Y%m%d%H%M%S}

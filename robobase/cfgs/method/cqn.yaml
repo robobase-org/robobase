@@ -1,0 +1,82 @@
+# @package _global_
+
+method:
+  _target_: robobase.method.cqn.CQN
+  num_explore_steps: ${num_explore_steps}
+  is_rl: true
+  critic_lr: 1e-4
+  view_fusion_lr: 1e-4
+  encoder_lr: 1e-4
+  weight_decay: 0.0
+  num_critics: 1  # Not supported
+  critic_target_tau: 0.02
+  stddev_schedule: 0.1
+  critic_grad_clip: null
+  use_dueling: true
+  always_bootstrap: false  # Always do bootstrap; could be useful for episodic task
+  bc_lambda: 0.0
+  bc_margin: 0.0  # If > 0.0, encourage expert action's Q(s, a*) be higher than other actions' Q(s, a)
+  use_target_network_for_rollout: false
+  num_update_steps: 1  # If > 1, take N updates inside a single `update` call
+  use_augmentation: true
+  use_torch_compile: false
+  levels: 3
+  bins: 5
+  v_min: 0     # Set to r_min / (1 - gamma) for infinite-length tasks or r_min for episodic task
+  v_max: 200.0 # Set to r_max / (1 - gamma), e.g., DMC -> 200 (with action repeat 2) or to r_max, e.g., RLBench -> 1
+  atoms: 51    # Worth trying 101
+  critic_lambda: 1.0
+  centralized_critic: false
+
+  advantage_model:
+    _target_: robobase.models.MLPWithBottleneckFeatures
+    _partial_: true
+    input_shapes: ???
+    output_shape: ???
+    num_envs: ???
+    num_rnn_layers: 1
+    rnn_hidden_size: 128
+    keys_to_bottleneck: [fused_view_feats]
+    bottleneck_size: 64
+    norm_after_bottleneck: true
+    tanh_after_bottleneck: true
+    mlp_nodes: [512, 512]
+    activation: silu
+    norm: layer
+    linear_bias: false
+
+  value_model:
+    _target_: robobase.models.MLPWithBottleneckFeatures
+    _partial_: true
+    input_shapes: ???
+    output_shape: ???
+    num_envs: ???
+    num_rnn_layers: 1
+    rnn_hidden_size: 128
+    keys_to_bottleneck: [fused_view_feats]
+    bottleneck_size: 64
+    norm_after_bottleneck: true
+    tanh_after_bottleneck: true
+    mlp_nodes: [512, 512]
+    activation: silu
+    norm: layer
+    linear_bias: false
+
+  encoder_model:
+    _target_: robobase.models.EncoderCNNMultiViewDownsampleWithStrides
+    _partial_: true
+    input_shape: ???
+    num_downsample_convs: 1
+    num_post_downsample_convs: 3
+    channels: 32
+    kernel_size: 3
+    channels_multiplier: 1
+    padding: 0
+    activation: silu
+    norm: layer_for_cnn
+
+  view_fusion_model:
+    _target_: robobase.models.FusionMultiCamFeature
+    _partial_: true
+    input_shape: ???
+    mode: flatten

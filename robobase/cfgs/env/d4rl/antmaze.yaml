@@ -1,0 +1,11 @@
+# @package _global_
+
+defaults:
+  - d4rl
+  - _self_
+
+env:
+  # choose between [antmaze-umaze-v0, antmaze-umaze-diverse-v0, antmaze-medium-diverse-v0, antmaze-medium-play-v0, antmaze-large-diverse-v0, antmaze-large-play-v0]
+  task_name: antmaze-medium-diverse-v0
+
+# demos: 2924 # Full size = 2924
