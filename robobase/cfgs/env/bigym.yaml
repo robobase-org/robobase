@@ -2,8 +2,8 @@
 
 env:
   env_name: bigym
-  episode_length: 1000
+  episode_length: 3000
   cameras: ["head", "right_wrist", "left_wrist"]
   action_mode: JOINT_POSITION
 
-action_repeat: 2
+  demo_frequency: 25

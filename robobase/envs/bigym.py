@@ -2,8 +2,7 @@ from enum import Enum
 
 from bigym.bigym_env import BiGymEnv
 from bigym.action_modes import ActionMode, JointPositionActionMode, TorqueActionMode
-from bigym.envs.reach_target import ReachTarget
-from bigym.envs.move_plate_between_drainers import MovePlateBetweenDrainers
+from robobase.envs.utils.bigym_utils import TASK_MAP
 import gymnasium as gym
 from gymnasium.wrappers import TimeLimit
 from robobase.envs.env import EnvFactory
@@ -26,13 +25,7 @@ class ActionModeType(Enum):
 
 
 def _task_name_to_env_class(task_name: str) -> type[BiGymEnv]:
-    match task_name:
-        case "reach_target":
-            return ReachTarget
-        case "move_plate_between_drainers":
-            return MovePlateBetweenDrainers
-    raise NotImplementedError("Env Not Implemented Yet.")
-
+    return TASK_MAP[task_name]
 
 def _create_action_mode(action_mode: str) -> ActionMode:
     if action_mode == ActionModeType.TORQUE.value:
