@@ -1,8 +1,6 @@
-from enum import Enum
-
 from bigym.bigym_env import BiGymEnv, CONTROL_FREQUENCY_MAX
-from bigym.action_modes import ActionMode, JointPositionActionMode, TorqueActionMode
-from robobase.utils import rescale_demo_actions, DemoEnv, add_demo_to_replay_buffer
+from bigym.action_modes import JointPositionActionMode
+from robobase.utils import DemoEnv, add_demo_to_replay_buffer
 from robobase.envs.utils.bigym_utils import TASK_MAP
 import gymnasium as gym
 from gymnasium.wrappers import TimeLimit
@@ -24,31 +22,41 @@ import logging
 import numpy as np
 
 from demonstrations.demo import DemoStep
-from demonstrations.demo_store import DemoStore, DemoConverter
+from demonstrations.demo_store import DemoStore
 from demonstrations.utils import Metadata
 
-from typing import List, Dict, Tuple
-from pathlib import Path
-import pickle
+from typing import List, Dict, Tuple, Callable
 import copy
 
 UNIT_TEST = False
 
 
-class ActionModeType(Enum):
-    TORQUE = "TORQUE"
-    JOINT_POSITION = "JOINT_POSITION"
+def rescale_demo_actions(
+    rescale_fn: Callable, demos: List[List[DemoStep]], cfg: DictConfig
+):
+    """Rescale actions in demonstrations to [-1, 1] Tanh space.
+    This is because RoboBase assumes everything to be in [-1, 1] space.
+
+    Args:
+        rescale_fn: callable that takes info containing demo action and cfg and
+            outputs the rescaled action
+        demos: list of demo episodes whose actions are raw, i.e., not scaled
+        cfg: Configs
+
+    Returns:
+        List[Demo]: list of demo episodes whose actions are rescaled
+    """
+    for demo in demos:
+        for step in demo:
+            info = step.info
+            if "demo_action" in info:
+                # Rescale demo actions
+                info["demo_action"] = rescale_fn(info, cfg)
+    return demos
 
 
 def _task_name_to_env_class(task_name: str) -> type[BiGymEnv]:
     return TASK_MAP[task_name]
-
-
-def _create_action_mode(action_mode: str) -> ActionMode:
-    if action_mode == ActionModeType.TORQUE.value:
-        return TorqueActionMode()
-    elif action_mode == ActionModeType.JOINT_POSITION.value:
-        return JointPositionActionMode()
 
 
 class BiGymEnvFactory(EnvFactory):
@@ -61,6 +69,7 @@ class BiGymEnvFactory(EnvFactory):
         observation_space = copy.deepcopy(env.observation_space)
 
         env = RescaleFromTanhWithMinMax(
+            env=env,
             action_stats=self._action_stats,
             min_max_margin=cfg.min_max_margin,
         )
@@ -73,12 +82,12 @@ class BiGymEnvFactory(EnvFactory):
         )
         if cfg.use_onehot_time_and_no_bootstrap:
             env = OnehotTime(env, cfg.env.episode_length)
-        env = FrameStack(env, cfg.frame_stack)
+        if not demo_env:
+            env = FrameStack(env, cfg.frame_stack)
         env = TimeLimit(
             env,
-            cfg.env.episode_length // cfg.demo_down_sample_rate,
+            cfg.env.episode_length // cfg.env.demo_down_sample_rate,
         )
-        env = ActionSequence(env, cfg.action_sequence)
 
         if not demo_env:
             if not train:
@@ -99,7 +108,7 @@ class BiGymEnvFactory(EnvFactory):
         env = AppendDemoInfo(env)
 
         if return_raw_spaces:
-            return env, (action_space, observation_space)
+            return env, action_space, observation_space
         else:
             return env
 
@@ -128,87 +137,65 @@ class BiGymEnvFactory(EnvFactory):
             )
 
         return bigym_class(
+            render_mode=cfg.env.render_mode,
             action_mode=action_mode,
             observation_config=ObservationConfig(
                 cameras=camera_configs if cfg.pixels else [],
                 proprioception=True,
                 privileged_information=False if cfg.pixels else True,
             ),
+            control_frequency=CONTROL_FREQUENCY_MAX // cfg.env.demo_down_sample_rate,
         )
 
     def make_train_env(self, cfg: DictConfig) -> gym.vector.VectorEnv:
         vec_env_class = gym.vector.AsyncVectorEnv
-        kwargs = dict(context="fork")
-        if UNIT_TEST:
-            vec_env_class = gym.vector.SyncVectorEnv
-            kwargs = dict()
-
         return vec_env_class(
             [
                 lambda: self._wrap_env(
                     self._create_env(cfg),
+                    cfg,
                     demo_env=False,
                     train=True,
                 )
                 for _ in range(cfg.num_train_envs)
             ],
-            **kwargs
         )
 
     def make_eval_env(self, cfg: DictConfig) -> gym.Env:
         env, self._action_space, self._observation_space = self._wrap_env(
             env=self._create_env(cfg),
+            cfg=cfg,
             demo_env=False,
             train=False,
             return_raw_spaces=True,
         )
         return env
 
-    def _get_demo_from_scratch(
-        self, cfg: DictConfig, num_demos: int, mp_list: List
-    ) -> None:
+    def _get_demo_fn(self, cfg: DictConfig, num_demos: int, mp_list: List) -> None:
         demos = []
 
         logging.info("Start to load demos.")
         env = self._create_env(cfg)
 
         demo_store = DemoStore()
+        if np.isinf(num_demos):
+            num_demos = -1
 
-        demos = demo_store.get_demos(Metadata.from_env(env), amount=-1)
+        demos = demo_store.get_demos(
+            Metadata.from_env(env),
+            amount=num_demos,
+            frequency=CONTROL_FREQUENCY_MAX // cfg.env.demo_down_sample_rate,
+        )
 
         for demo in demos:
             for ts in demo.timesteps:
-                ts.observation = {k: np.array(v) for k, v in ts.observation.items()}
+                ts.observation = {
+                    k: np.array(v, dtype=np.float32) for k, v in ts.observation.items()
+                }
 
         env.close()
         logging.info("Finished loading demos.")
         mp_list.append(demos)
-
-    def _get_demo_fn(self, cfg: DictConfig, num_demos: int, mp_list: List) -> None:
-        dataset_root = cfg.env.dataset_root
-        if dataset_root == "":
-            dataset_root = Path.home() / ".bigym" / "cache"
-
-        cache_dir = (
-            dataset_root
-            / cfg.env.env_name
-            / cfg.env.task_name
-            / cfg.env.action_mode
-            / "pixels"
-            if cfg.pixels
-            else "low_dim_state"
-        )
-        cache_dir.makedirs(exist_ok=True)
-        cache_path = cache_dir / "cache.pkl"
-
-        if cache_path.exists():
-            demos = pickle.load(cache_path.open("rb"))
-            mp_list.append(demos)
-            logging.info("Loaded demos from cache.")
-        else:
-            self._get_demo_from_scratch(cfg, num_demos, mp_list)
-            demos = mp_list[0]
-            pickle.dump(demos, cache_path.open("wb"), pickle.HIGHEST_PROTOCOL)
 
     def collect_or_fetch_demos(self, cfg: DictConfig, num_demos: int):
         manager = mp.Manager()
@@ -223,16 +210,7 @@ class BiGymEnvFactory(EnvFactory):
 
         demos = mp_list[0]
 
-        if num_demos < len(demos):
-            demos = demos[:num_demos]
-
-        self._raw_demos = [
-            DemoConverter.decimate(
-                demo,
-                target_freq=CONTROL_FREQUENCY_MAX // cfg.env.demo_down_sample_rate,
-            )
-            for demo in demos
-        ]
+        self._raw_demos = demos
         self._action_stats = self._compute_action_stats(cfg, demos)
 
     def post_collect_or_fetch_demos(self, cfg: DictConfig):

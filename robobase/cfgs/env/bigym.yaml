@@ -4,6 +4,11 @@ env:
   env_name: bigym
   episode_length: 3000
   cameras: ["head", "right_wrist", "left_wrist"]
-  action_mode: JOINT_POSITION
-
+  action_mode: absolute
+  floating: true
+  dataset_root: ""
   demo_down_sample_rate: 20
+  render_mode: rgb_array
+  enable_all_floating_dof: false
+
+demos: !!float .inf

@@ -381,7 +381,7 @@ class ActBCAgent(BC):
 
         metrics = dict()
         batch = next(replay_iter)
-        batch = {k: v.to(self.device) for k, v in batch.items()}
+        batch = {k: v.float().to(self.device) for k, v in batch.items()}
 
         actions = batch["action"]
         reward = batch["reward"]
