@@ -1,0 +1,12 @@
+# @package _global_
+
+defaults:
+  - bigym
+  - _self_
+
+env:
+  task_name: dishwasher_unload_cups_long
+  stddev_schedule: linear(1.0,0.1,500000)
+  episode_length: 18000
+  demo_down_sample_rate: 25
+  enable_all_floating_dof: true
