@@ -290,7 +290,10 @@ class BiGymEnvFactory(EnvFactory):
     def _get_gripper_action_stats(
         self, cfg: DictConfig
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        return (0.5, 1, 1, 0)
+        if cfg.env.action_mode in ["absolute", "delta"]:
+            return (0.5, 0.25, 1, 0)
+        else:
+            raise NotImplementedError("Unsupported action mode.")
 
     def _rescale_demo_action_helper(self, info, cfg: DictConfig):
         return RescaleFromTanhWithMinMax.transform_to_tanh(
