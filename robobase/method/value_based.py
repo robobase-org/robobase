@@ -10,7 +10,10 @@ from robobase import utils
 from robobase.method.core import OffPolicyMethod
 from robobase.models.fusion import FusionModule
 from robobase.models.encoder import EncoderModule
-from robobase.models.fully_connected import FullyConnectedModule, RNNFullyConnectedModule
+from robobase.models.fully_connected import (
+    FullyConnectedModule,
+    RNNFullyConnectedModule,
+)
 from robobase.replay_buffer.replay_buffer import ReplayBuffer
 from robobase.replay_buffer.prioritized_replay_buffer import PrioritizedReplayBuffer
 from robobase.method.utils import (
