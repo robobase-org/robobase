@@ -6,4 +6,4 @@ env:
   cameras: ["head", "right_wrist", "left_wrist"]
   action_mode: JOINT_POSITION
 
-  demo_frequency: 25
+  demo_down_sample_rate: 20
