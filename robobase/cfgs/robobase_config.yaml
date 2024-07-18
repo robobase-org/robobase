@@ -61,7 +61,6 @@ replay:
 wandb:  # weight and bias
   use: false
   project: ${oc.env:USER}RoboBase
-  entity: rll
   name: null
 
 tb:  # TensorBoard

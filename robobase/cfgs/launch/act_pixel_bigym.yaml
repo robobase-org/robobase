@@ -4,11 +4,11 @@ defaults:
   - ../env: null
   - ../method: act
 
-demos: !!float .inf
+demos: 30
 num_pretrain_steps: 150000
 num_train_frames: 0
-eval_every_steps: 5000
-num_eval_episodes: 10
+eval_every_steps: 2000
+num_eval_episodes: 5
 batch_size: 256
 save_snapshot: true
 snapshot_every_n: 0
