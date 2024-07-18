@@ -15,7 +15,7 @@ snapshot_every_n: 0
 replay_size_before_train: 500
 
 pixels: true
-frame_stack: 2
+frame_stack: 4
 
 action_repeat: 1
 action_sequence: 16
