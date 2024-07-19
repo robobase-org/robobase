@@ -24,6 +24,7 @@ temporal_ensemble: true
 use_standardization: false  # Demo-based standardization for action space
 use_min_max_normalization: true  # Demo-based min-max normalization for action space
 min_max_margin: 0
+norm_obs: true
 
 update_every_steps: 1
 

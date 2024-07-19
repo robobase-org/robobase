@@ -73,11 +73,17 @@ class BiGymEnvFactory(EnvFactory):
             action_stats=self._action_stats,
             min_max_margin=cfg.min_max_margin,
         )
+        obs_stats = None
+        if cfg.norm_obs:
+            obs_stats = self._obs_stats
+
         env = ConcatDim(
             env,
             shape_length=1,
             dim=-1,
             new_name="low_dim_state",
+            norm_obs=cfg.norm_obs,
+            obs_stats=obs_stats,
             keys_to_ignore=["proprioception_floating_base_actions"],
         )
         if cfg.use_onehot_time_and_no_bootstrap:
@@ -212,6 +218,7 @@ class BiGymEnvFactory(EnvFactory):
 
         self._raw_demos = demos
         self._action_stats = self._compute_action_stats(cfg, demos)
+        self._obs_stats = self._compute_obs_stats(cfg, demos)
 
     def post_collect_or_fetch_demos(self, cfg: DictConfig):
         demo_list = [demo.timesteps for demo in self._raw_demos]
@@ -286,6 +293,26 @@ class BiGymEnvFactory(EnvFactory):
             "min": action_min,
         }
         return action_stats
+
+    def _compute_obs_stats(self, cfg: DictConfig, demos: List[List[DemoStep]]) -> Dict:
+        obs = []
+        for demo in demos:
+            for step in demo.timesteps:
+                obs.append(step.observation)
+
+        keys = obs[0].keys()
+        obs = {key: np.stack([o[key] for o in obs], axis=0) for key in keys}
+        obs_mean = {key: np.mean(obs[key], 0) for key in keys}
+        obs_std = {key: np.std(obs[key], 0) for key in keys}
+        obs_min = {key: np.min(obs[key], 0) for key in keys}
+        obs_max = {key: np.max(obs[key], 0) for key in keys}
+        obs_stats = {
+            "mean": obs_mean,
+            "std": obs_std,
+            "max": obs_max,
+            "min": obs_min,
+        }
+        return obs_stats
 
     def _get_gripper_action_stats(
         self, cfg: DictConfig
