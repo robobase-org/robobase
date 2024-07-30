@@ -77,6 +77,8 @@ class BiGymEnvFactory(EnvFactory):
         if cfg.norm_obs:
             obs_stats = self._obs_stats
 
+        # We normalize the low dimensional observations in the ConcatDim wrapper.
+        # This is to be consistent with the original ACT implementation.
         env = ConcatDim(
             env,
             shape_length=1,

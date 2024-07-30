@@ -25,6 +25,8 @@ class ConcatDim(gym.ObservationWrapper, gym.utils.RecordConstructorArgs):
             shape_length: The ndim we are interested in, e.g. images=3, low_dim=1.
             dim: The oberservations with this ...
             new_name: The name of the new observation.
+            norm_obs: Whether to normalize observations.
+            obs_stats: The obs statistics for normalizing observations.
             keys_to_ignore: A list of keys to not include in this combined observation,
                 regardless if they meet shape_len.
         """
@@ -55,6 +57,10 @@ class ConcatDim(gym.ObservationWrapper, gym.utils.RecordConstructorArgs):
         new_obs = {}
         combined = []
         for k, v in observation.items():
+            # We allow normalizing observations in the ConcatDim wrapper
+            # because all obs stats are stored with original key names and
+            # ConcatDim will rename them to new keys. Doing it here would
+            # safer and cleaner.
             if len(v.shape) == shape_len and k not in self._keys_to_ignore:
                 if self._norm_obs and k in self._obs_stats:
                     v = (v - self._obs_stats["mean"][k]) / self._obs_stats["std"][k]
