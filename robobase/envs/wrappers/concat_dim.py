@@ -14,6 +14,8 @@ class ConcatDim(gym.ObservationWrapper, gym.utils.RecordConstructorArgs):
         shape_length: int,
         dim: int,
         new_name: str,
+        norm_obs: bool = False,
+        obs_stats: dict = None,
         keys_to_ignore: list[str] = None,
     ):
         """Init.
@@ -23,6 +25,8 @@ class ConcatDim(gym.ObservationWrapper, gym.utils.RecordConstructorArgs):
             shape_length: The ndim we are interested in, e.g. images=3, low_dim=1.
             dim: The oberservations with this ...
             new_name: The name of the new observation.
+            norm_obs: Whether to normalize observations.
+            obs_stats: The obs statistics for normalizing observations.
             keys_to_ignore: A list of keys to not include in this combined observation,
                 regardless if they meet shape_len.
         """
@@ -31,8 +35,10 @@ class ConcatDim(gym.ObservationWrapper, gym.utils.RecordConstructorArgs):
         self.is_vector_env = getattr(env, "is_vector_env", False)
         self._shape_length = shape_length + int(self.is_vector_env)
         self._dim = dim + int(self.is_vector_env)
-        self._name_name = new_name
+        self._new_name = new_name
         self._keys_to_ignore = [] if keys_to_ignore is None else keys_to_ignore
+        self._norm_obs = norm_obs
+        self._obs_stats = obs_stats
         new_obs_dict = {}
         combined = []
         for k, v in self.observation_space.items():
@@ -51,11 +57,17 @@ class ConcatDim(gym.ObservationWrapper, gym.utils.RecordConstructorArgs):
         new_obs = {}
         combined = []
         for k, v in observation.items():
+            # We allow normalizing observations in the ConcatDim wrapper
+            # because all obs stats are stored with original key names and
+            # ConcatDim will rename them to new keys. Doing it here would
+            # safer and cleaner.
             if len(v.shape) == shape_len and k not in self._keys_to_ignore:
+                if self._norm_obs and k in self._obs_stats:
+                    v = (v - self._obs_stats["mean"][k]) / self._obs_stats["std"][k]
                 combined.append(v)
             else:
                 new_obs[k] = v
-        new_obs[self._name_name] = np.concatenate(combined, dim)
+        new_obs[self._new_name] = np.concatenate(combined, dim)
         return new_obs
 
     def observation(self, observation):

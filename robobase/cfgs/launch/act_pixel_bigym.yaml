@@ -1,0 +1,36 @@
+# @package _global_
+
+defaults:
+  - ../env: null
+  - ../method: act
+
+demos: 30
+num_pretrain_steps: 150000
+num_train_frames: 0
+eval_every_steps: 2000
+num_eval_episodes: 5
+batch_size: 256
+save_snapshot: true
+snapshot_every_n: 0
+replay_size_before_train: 500
+
+pixels: true
+frame_stack: 4
+
+action_repeat: 1
+action_sequence: 16
+execution_length: 1
+temporal_ensemble: true
+use_standardization: false  # Demo-based standardization for action space
+use_min_max_normalization: true  # Demo-based min-max normalization for action space
+min_max_margin: 0
+norm_obs: true
+
+update_every_steps: 1
+
+replay:
+  nstep: 1
+
+hydra:
+  run:
+    dir: ./exp_local/pixel_act/bigym_${env.task_name}_${now:%Y%m%d%H%M%S}

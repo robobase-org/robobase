@@ -1,9 +1,0 @@
-# @package _global_
-
-defaults:
-  - bigym
-  - _self_
-
-env:
-  task_name: move_plate_between_drainers
-  stddev_schedule: linear(1.0,0.1,500000)

@@ -13,7 +13,11 @@ from robobase.envs.wrappers.action_sequence import (
     RecedingHorizonControl,
 )
 from robobase.envs.wrappers.append_demo_info import AppendDemoInfo
-from robobase.envs.wrappers.reward_modifiers import ClipReward, ScaleReward, ShapeRewards
+from robobase.envs.wrappers.reward_modifiers import (
+    ClipReward,
+    ScaleReward,
+    ShapeRewards,
+)
 
 __all__ = [
     "ConcatDim",

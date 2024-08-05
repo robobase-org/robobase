@@ -174,7 +174,6 @@ class Logger(object):
 
             wandb.init(
                 project=cfg.wandb.project,
-                entity=cfg.wandb.entity,
                 name=cfg.wandb.name,
                 config=cfg_dict,
             )

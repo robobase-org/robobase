@@ -91,7 +91,7 @@ pip install ".[bigym]"
 | Method                                        | Paper                                                                                                   | 1-line Summary                              | Differences to paper?             | Stable    |
 |-----------------------------------------------|---------------------------------------------------------------------------------------------------------|---------------------------------------------|-----------------------------------|-----------|
 | [diffusion](robobase/cfgs/method/diffusion.yaml) | [Diffusion Policy: Visuomotor Policy Learning via Action Diffusion](https://arxiv.org/abs/2303.04137)   | Brings diffusion to robotics.               | None.                             | :warning: |
-| [act](robobase/cfgs/method/act.yaml)             | [Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware](https://arxiv.org/abs/2304.13705)  | Transformer and action-sequence prediction. | None.                             | :warning: |
+| [act](robobase/cfgs/method/act.yaml)             | [Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware](https://arxiv.org/abs/2304.13705)  | Transformer and action-sequence prediction. | None.                             | :white_check_mark: |
 
 ### Algorithmic Features
 

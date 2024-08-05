@@ -30,7 +30,9 @@ def run_cmd(hydra_overrides: list[str], target_reward: float, result_queue):
     try:
         with tempfile.TemporaryDirectory(dir=Path.cwd()) as tmpdirname:
             with initialize(
-                version_base=None, config_path="../../robobase/cfgs", job_name="test_app"
+                version_base=None,
+                config_path="../../robobase/cfgs",
+                job_name="test_app",
             ):
                 hydra_overrides.append(f"replay.save_dir={tmpdirname}/replay")
                 tmp_dir = Path(tmpdirname)

@@ -41,6 +41,7 @@ temporal_ensemble_gain: 0.01
 use_standardization: false  # Demo-based standardization for action space
 use_min_max_normalization: false  # Demo-based min-max normalization for action space
 min_max_margin: 0.0  # If set to > 0, introduce margin for demo-driven min-max normalization
+norm_obs: false
 
 # Replay buffer settings
 replay:
@@ -61,7 +62,6 @@ replay:
 wandb:  # weight and bias
   use: false
   project: ${oc.env:USER}RoboBase
-  entity: rll
   name: null
 
 tb:  # TensorBoard

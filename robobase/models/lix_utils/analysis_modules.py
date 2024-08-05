@@ -4,7 +4,9 @@ from typing import Tuple
 import numpy as np
 import torch.nn as nn
 
-from robobase.models.lix_utils.analysis_layers import NonLearnableParameterizedRegWrapper
+from robobase.models.lix_utils.analysis_layers import (
+    NonLearnableParameterizedRegWrapper,
+)
 from robobase.models.lix_utils import analysis_layers
 from robobase.models import EncoderCNNMultiViewDownsampleWithStrides
 from robobase.utils import weight_init

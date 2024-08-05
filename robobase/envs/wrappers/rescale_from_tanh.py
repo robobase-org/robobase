@@ -218,6 +218,7 @@ class RescaleFromTanhWithMinMax(gym.ActionWrapper, gym.utils.RecordConstructorAr
 
     @staticmethod
     def transform_from_tanh(action, action_stats, min_max_margin):
+        action = action.clip(-1.0, 1.0)
         action_min, action_max = action_stats["min"], action_stats["max"]
         _action_min = action_min - np.fabs(action_min) * min_max_margin
         _action_max = action_max + np.fabs(action_max) * min_max_margin
@@ -232,7 +233,9 @@ class RescaleFromTanhWithMinMax(gym.ActionWrapper, gym.utils.RecordConstructorAr
         _action_min = action_min - np.fabs(action_min) * min_max_margin
         _action_max = action_max + np.fabs(action_max) * min_max_margin
 
-        new_action = (action - _action_min) / (_action_max - _action_min)  # to [0, 1]
+        new_action = (action - _action_min) / (
+            _action_max - _action_min + 1e-8
+        )  # to [0, 1]
         new_action = new_action * 2 - 1  # to [-1, 1]
         return new_action.astype(np.float32, copy=False)
 
