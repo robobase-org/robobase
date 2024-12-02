@@ -113,17 +113,18 @@ class Workspace:
         )
         print(f"workspace: {self.work_dir}")
 
-        # # Sanity checks
-        # if (
-        #     cfg.replay_size_before_train * cfg.action_repeat * cfg.action_sequence
-        #     < cfg.env.episode_length
-        #     and cfg.replay_size_before_train > 0
-        # ):
-        #     raise ValueError(
-        #         "replay_size_before_train * action_repeat "
-        #         f"({cfg.replay_size_before_train} * {cfg.action_repeat}) "
-        #         f"must be >= episode_length ({cfg.env.episode_length})."
-        #     )
+        # Sanity checks
+        if (
+            not cfg.is_imitation_learning
+            and cfg.replay_size_before_train * cfg.action_repeat * cfg.action_sequence
+            < cfg.env.episode_length
+            and cfg.replay_size_before_train > 0
+        ):
+            raise ValueError(
+                "replay_size_before_train * action_repeat "
+                f"({cfg.replay_size_before_train} * {cfg.action_repeat}) "
+                f"must be >= episode_length ({cfg.env.episode_length})."
+            )
 
         if cfg.method.is_rl and cfg.action_sequence != 1:
             raise ValueError("Action sequence > 1 is not supported for RL methods")
@@ -486,7 +487,11 @@ class Workspace:
     def _load_demos(self):
         if (num_demos := self.cfg.demos) != 0:
             # NOTE: Currently we do not protect demos from being evicted from replay
-            self.env_factory.load_demos_into_replay(self.cfg, self.replay_buffer, is_demo_buffer=True if self.cfg.is_imitation_learning else False)
+            self.env_factory.load_demos_into_replay(
+                self.cfg,
+                self.replay_buffer,
+                is_demo_buffer=True if self.cfg.is_imitation_learning else False,
+            )
             if self.use_demo_replay:
                 # Load demos to the dedicated demo_replay_buffer
                 self.env_factory.load_demos_into_replay(
