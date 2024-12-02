@@ -7,6 +7,6 @@ defaults:
 env:
   task_name: dishwasher_open_trays
   stddev_schedule: linear(1.0,0.1,500000)
-  episode_length: 3000
+  episode_length: 9500
   demo_down_sample_rate: 25
   enable_all_floating_dof: true

@@ -19,6 +19,7 @@ num_explore_steps: 2000
 save_snapshot: false
 snapshot_every_n: 1000
 batch_size: 256
+is_imitation_learning: false
 
 # Demonstration settings
 demos: 0
@@ -60,9 +61,10 @@ replay:
 
 # logging settings
 wandb:  # weight and bias
-  use: false
-  project: ${oc.env:USER}RoboBase
-  name: null
+  use: true
+  project: act_bigym
+  entity: younggyo
+  name: act
 
 tb:  # TensorBoard
   use: false

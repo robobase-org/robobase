@@ -284,7 +284,9 @@ python3 train.py launch=mwm env=dmc/walker_walk
 
 python3 train.py launch=mwm_rlbench env=rlbench/open_drawer
 
-python3 train.py method=act pixels=true env=rlbench/reach_target
+python3 train.py method=act pixels=true env=rlbench/reach_target is_imitation_learning=true
+
+python3 train.py method=act launch=act_pixel_bigym env=bigym/dishwasher_close wandb.name=act_bigym_dishwasher_close batch_size=256 demos=-1
 ```
 
 ### Running existing algorithms/networks on custom environments.

@@ -5,17 +5,19 @@ defaults:
   - ../method: act
 
 demos: 30
-num_pretrain_steps: 150000
+num_pretrain_steps: 100000
 num_train_frames: 0
-eval_every_steps: 2000
-num_eval_episodes: 5
+eval_every_steps: 2500
+num_eval_episodes: 25
 batch_size: 256
 save_snapshot: true
 snapshot_every_n: 0
 replay_size_before_train: 500
 
 pixels: true
-frame_stack: 4
+frame_stack: 1
+
+is_imitation_learning: true
 
 action_repeat: 1
 action_sequence: 16
