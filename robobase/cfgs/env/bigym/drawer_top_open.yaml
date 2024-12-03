@@ -8,5 +8,5 @@ env:
   task_name: drawer_top_open
   stddev_schedule: linear(1.0,0.1,500000)
   episode_length: 5000
-  demo_down_sample_rate: 10
+  demo_down_sample_rate: 25
   enable_all_floating_dof: true

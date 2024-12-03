@@ -43,7 +43,7 @@ def _create_default_replay_buffer(
     demo_replay: bool = False,
 ) -> ReplayBuffer:
     extra_replay_elements = spaces.Dict({})
-    if cfg.demos > 0:
+    if cfg.demos != 0:
         extra_replay_elements["demo"] = spaces.Box(0, 1, shape=(), dtype=np.uint8)
     # Create replay_class with buffer-specific hyperparameters
     replay_class = UniformReplayBuffer
@@ -115,7 +115,8 @@ class Workspace:
 
         # Sanity checks
         if (
-            cfg.replay_size_before_train * cfg.action_repeat * cfg.action_sequence
+            not cfg.is_imitation_learning
+            and cfg.replay_size_before_train * cfg.action_repeat * cfg.action_sequence
             < cfg.env.episode_length
             and cfg.replay_size_before_train > 0
         ):
@@ -153,7 +154,7 @@ class Workspace:
         self.logger = Logger(self.work_dir, cfg=self.cfg)
         self.env_factory = env_factory
 
-        if (num_demos := cfg.demos) > 0:
+        if (num_demos := cfg.demos) != 0:
             # Collect demos or fetch saved demos before making environments
             # to consider demo-based action space (e.g., standardization)
             self.env_factory.collect_or_fetch_demos(cfg, num_demos)
@@ -168,7 +169,7 @@ class Workspace:
         # Create evaluation environment
         self.eval_env = self.env_factory.make_eval_env(cfg)
 
-        if num_demos > 0:
+        if num_demos != 0:
             # Post-process demos using the information from environments
             self.env_factory.post_collect_or_fetch_demos(cfg)
 
@@ -484,13 +485,17 @@ class Workspace:
         self._shutting_down = True
 
     def _load_demos(self):
-        if (num_demos := self.cfg.demos) > 0:
+        if (num_demos := self.cfg.demos) != 0:
             # NOTE: Currently we do not protect demos from being evicted from replay
-            self.env_factory.load_demos_into_replay(self.cfg, self.replay_buffer)
+            self.env_factory.load_demos_into_replay(
+                self.cfg,
+                self.replay_buffer,
+                is_demo_buffer=True if self.cfg.is_imitation_learning else False,
+            )
             if self.use_demo_replay:
                 # Load demos to the dedicated demo_replay_buffer
                 self.env_factory.load_demos_into_replay(
-                    self.cfg, self.demo_replay_buffer
+                    self.cfg, self.demo_replay_buffer, is_demo_buffer=True
                 )
 
         if self.cfg.replay_size_before_train > 0:

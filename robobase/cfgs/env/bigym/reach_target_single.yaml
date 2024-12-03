@@ -7,6 +7,6 @@ defaults:
 env:
   task_name: reach_target_single
   stddev_schedule: linear(1.0,0.1,500000)
-  episode_length: 2000
+  episode_length: 1000
   demo_down_sample_rate: 10
   enable_all_floating_dof: false

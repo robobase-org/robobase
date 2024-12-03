@@ -16,6 +16,8 @@ snapshot_every_n: 0
 pixels: true
 frame_stack: 1
 
+is_imitation_learning: true
+
 action_repeat: 1
 action_sequence: 20
 execution_length: 1
